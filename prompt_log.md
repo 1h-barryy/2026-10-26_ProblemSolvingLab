@@ -6,7 +6,38 @@ ChatGPT 6 Astra
 Claude Opus5.5
 Claude code Opus 5.5
 
-## Prompt to ClaudeCode
+## Prompt 
+
+### Brain storming prompt
+
+
+I personally prefer ideas 2 and 6, although I think ideas 1 and 2 have more research potential.
+
+The first idea reminds me of a financial game I worked on previously. I eventually realized that it didn't have much practical use or meaning beyond demonstrating the concept.
+
+However, idea 2 also feels somewhat like Wikipedia. I want to explore how we could make it more meaningful.
+
+
+
+I think I would actually use this app, although making it genuinely useful would probably require several iterations and a much more complete database.
+
+For now, our main goal is to finish and submit the assignment.
+
+I really like the Problem-Solving Lab concept, but I'm also thinking about its target audience. If someone isn't a researcher or designer, would they actually ask questions about academic mechanisms or cross-disciplinary approaches?
+
+I also want to explore adding AI and RAG in future iterations, but that doesn't need to be part of the current assignment.
+
+
+
+I'm happy with the current scope and overall design direction.
+
+However, I want to refine the core interaction. Instead of simply asking a problem and receiving possible solutions, I want users to describe their problems in natural language.
+
+The app should help identify and categorize the professional or academic terminology behind those problems. It should also help users discover related concepts or analogies from other disciplines.
+
+I think this should be the central experience of the application.
+
+
 
   ### 1. Project Setup
 

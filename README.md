@@ -18,6 +18,10 @@ Each document contains a paper's title and abstract, along with its category and
 
 The papers are stored in a persistent ChromaDB collection using the `all-MiniLM-L6-v2` embedding model.
 
+Each database item represents one paper, using its title and abstract as searchable text. The metadata includes the paper ID, academic categories, publication date, and source URL.
+
+I did not split the papers into smaller chunks in this version. Some longer abstracts are truncated by the embedding model.
+
 ## 3. How It Works
 
 Users can enter a question in everyday language, and the app searches for semantically related research.
