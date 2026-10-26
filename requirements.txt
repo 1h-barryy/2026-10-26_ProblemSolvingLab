@@ -1,0 +1,2 @@
+# Phase 1 dependencies. preview_arxiv.py uses only the standard library.
+chromadb==1.5.9

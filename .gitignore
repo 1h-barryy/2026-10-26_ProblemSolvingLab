@@ -1,0 +1,38 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# All local data: ChromaDB files (data/chroma), cached arXiv responses (data/raw),
+# processed corpus (data/processed)
+data/
+*.sqlite3
+chroma/
+
+# Downloaded datasets
+*.jsonl
+*.parquet
+*.gz
+*.zip
+
+# Exported Discovery Cards
+cards/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets
+.env
+.env.*
+*.key
+secrets/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
