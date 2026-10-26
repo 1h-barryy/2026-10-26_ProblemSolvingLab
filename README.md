@@ -1,126 +1,135 @@
 # Problem-Solving Lab
 
-## What it does
+*A tool for discovering academic concepts through everyday questions.*
 
-TODO (written by student)
+## 1. About the Project
 
-## Setup
+I built this project because sometimes we know what problem we're facing, but don't know the right terms to search for or technical term to express it.
 
-Requires Python 3.13 on Windows. Commands assume PowerShell and the project root as the working directory.
+Problem-Solving Lab lets users describe a problem in natural language and find related research, technical terminology, and possible connections across different fields.
+
+Instead of just searching for papers, I wanted to help users better understand what their problem might actually be called.
+
+## 2. Dataset
+
+I used the arXiv API to collect **399 real research papers** across several fields, including human-computer interaction, cognitive science, robotics, and collective behavior.
+
+Each document contains a paper's title and abstract, along with its category and source information.
+
+The papers are stored in a persistent ChromaDB collection using the `all-MiniLM-L6-v2` embedding model.
+
+## 3. How It Works
+
+Users can enter a question in everyday language, and the app searches for semantically related research.
+
+The results are organized into a Discovery Card showing:
+
+- Related technical terms
+- Relevant academic fields
+- Possible cross-disciplinary connections
+- Research papers and their sources
+
+Users can also add their own notes, search for them immediately, and find them again after restarting the app.
+
+## 4. Why Semantic Search?
+
+I wanted to test whether a vector database could connect everyday descriptions with academic language, even when they don't use the same words.
+
+**Example 1 — Collective Motion**
+
+Query: "My stars move like they are following the same invisible clock; how could they behave more naturally as a group?"
+
+Result: *Intermittent Flocking and Fractal Collective Order Induced by Time-Varying Delays*
+
+Rank 1 · Cosine distance: 0.582
+
+**Example 2 — Task Interruptions**
+
+Query: "Every time a notification pops up I get distracted and it takes ages to focus again."
+
+Result: *Mitigating the Effects of Reading Interruptions by Providing Reviews and Previews*
+
+Rank 3 · Cosine distance: 0.537
+
+Neither matched paper shares exact non-stopword terms with its query in our evaluation. A simple exact-keyword search would miss these connections, while semantic search was able to retrieve them.
+
+## 5. Setup and Run
+
+The application runs locally using Python, ChromaDB, and Streamlit.
+
+**Requirements:** Python 3.13
+
+### Installation
+
+Create a virtual environment and install dependencies:
 
 ```powershell
-py -3.13 -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-`requirements.txt` pins `chromadb==1.5.9`. The arXiv scripts use only the standard library.
+### Build the Database
 
-## First-run downloads
-
-The first time anything is embedded (smoke test, ingest, or the first CLI search), ChromaDB downloads the
-**all-MiniLM-L6-v2** ONNX model (~79 MB) to `~/.cache/chroma/onnx_models/all-MiniLM-L6-v2/`
-(on Windows: `C:\Users\<you>\.cache\chroma\...`). Later runs use the cached copy and work offline,
-except `fetch_arxiv.py --refresh`, which calls the arXiv API.
-
-## Dataset
-
-TODO (written by student)
-
-## Rebuilding the corpus
-
-`data/` is git-ignored, so a fresh clone has no database. Rebuild it in two steps:
+Download the research papers from arXiv:
 
 ```powershell
-python fetch_arxiv.py   # 8 arXiv API queries x 50 results, 3 s apart -> data/processed/arxiv_papers.jsonl
-python ingest.py        # upserts into the "papers" collection in data/chroma/
+.\.venv\Scripts\python.exe fetch_arxiv.py
 ```
 
-- `fetch_arxiv.py` caches each raw API response in `data/raw/arxiv/` and reuses it on later runs; pass `--refresh`
-  to download again. It deduplicates by arXiv ID (version suffix stripped), skips empty abstracts, and aborts
-  without writing anything on a network or API error.
-- Expected counts from the build on 2026-10-26: 8 × 50 = 400 records returned, **399 unique papers** (one paper
-  matched two queries), 0 empty abstracts. A `--refresh` run may differ slightly as arXiv's results change.
-- `ingest.py` should end with `Final count in 'papers': 399`. Re-running it is safe because records are upserted by ID.
-- **Truncation:** each document is the title + abstract. **152 of 399 documents (38.1%) are longer than the model's
-  256-token input limit**, so their ends are cut off before embedding (about 54 tokens lost per affected document on
-  average). Documents are not chunked.
-
-Optional: `python smoke_test.py` checks the ChromaDB install using a separate `smoke_test_notes` collection.
-
-## Running the CLI
+Generate embeddings and store the papers in ChromaDB:
 
 ```powershell
-python cli.py
+.\.venv\Scripts\python.exe ingest.py
 ```
 
-| Command | What it does |
-|---|---|
-| `search` | Prompts for a problem in everyday language and prints a Discovery Card from the top 15 results |
-| `add` | Prompts for an optional title, then text; end the text with a line containing only `.`. The note is embedded and stored immediately |
-| `export` | Saves the last card as Markdown in `cards/` |
-| `stats` | Total count, plus counts per `source_type` and `primary_category` |
-| `quit` | Exits (also `exit`, `q`, or Ctrl+Z then Enter) |
+The database is stored locally in `data/chroma/`.
 
-Example session:
+The initial dataset is not included in GitHub. These setup commands allow users to build their own local database. They only need to do this once unless they want to rebuild it.
 
-```text
-lab> search
-Describe your problem: My stars move like they are following the same invisible clock; how could they behave more naturally as a group?
-# Discovery Card
-...
-## 3. Candidate terminology (extracted from retrieved sources, approximate)
-- **flocking** — in 8 sources: 2608.19887, 2609.37637, ...
-- **collective motion** — in 7 sources: ...
-...
-lab> export
-Saved ...\cards\20261026-172445-my-stars-move-like-they-are-following-th.md
-lab> quit
+### Run the Web App
+
+```powershell
+.\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-Card sections: 1. your problem, 2. match strength, 3. candidate terminology, 4. discipline map, 5. potential connection,
-6. sources, 7. your notes, 8. next step (a hypothesis to test).
+Open **http://localhost:8501** in your browser.
 
-Other scripts: `eval_queries.py` (top-10 results and distance spread for 4 test queries) and `case_evidence.py`
-(shared words and closest abstract sentence for chosen queries).
+The app has two main sections:
 
-## Add & search workflow
+- **Explore:** Ask a question, discover related academic terminology, and explore research through Discovery Cards.
+- **Add Knowledge:** Save personal notes and retrieve them through semantic search.
 
-TODO (written by student)
+The original CLI is also available:
 
-## Vector DB & embedding model
+```powershell
+.\.venv\Scripts\python.exe cli.py
+```
 
-- **Vector database:** ChromaDB 1.5.9, `chromadb.PersistentClient` storing to `data/chroma/`. `chroma.sqlite3` holds
-  IDs, document text and metadata; a folder named by UUID holds the HNSW vector index for each collection.
-- **Collections:** `papers` (arXiv abstracts plus user notes) and `smoke_test_notes` (12 test notes, kept separate).
-- **Embedding model:** Chroma's default embedding function, `all-MiniLM-L6-v2` run locally through ONNX Runtime.
-  It produces 384-dimensional vectors and truncates input at 256 tokens. It runs on CPU, with no API keys or network calls.
-- **Distance:** cosine (`configuration={"hnsw": {"space": "cosine"}}`), where 0 means identical direction and
-  lower means more similar. The card labels distances as strong (< 0.60), moderate (0.60–0.70) or weak (> 0.70). These bands
-  were chosen from the distances seen in four test queries and are not calibrated probabilities.
-- **Record IDs:** arXiv ID without the version suffix (e.g. `2106.00959`). User notes are stored as
-  `note-<UTC timestamp>-<8 hex chars>`, with `source_type="user_note"`.
+## 6. Technical Details
 
-## Semantic search tests
+- **Vector Database:** ChromaDB 1.5.9, using persistent local storage
+- **Embedding Model:** all-MiniLM-L6-v2 (384 dimensions)
+- **Distance Metric:** Cosine
+- **Dataset:** 399 arXiv papers at the time of development
+- **Frontend:** Streamlit
+- **Search Results:** Candidate terminology, academic categories, related papers, and potential connections
 
-TODO (written by student)
+The embedding model downloads automatically on first use. Once downloaded, it runs locally.
 
-## Limitations
+The current version does not use an LLM or RAG.
 
-- **Small, narrow corpus:** 399 abstracts from 8 hand-picked queries. A problem outside collective behavior,
-  multi-agent coordination, interruptions, working memory, or crowds/procedural graphics will only match weakly.
-  arXiv covers psychology and the social sciences poorly.
-- **Truncation:** 38% of documents lose the end of their abstract at embedding time. No chunking is done.
-- **Small general-purpose model:** all-MiniLM-L6-v2 is not tuned for scientific text or for matching everyday
-  phrasing to academic phrasing.
-- **Uncalibrated match labels:** the strong/moderate/weak bands come from a handful of queries.
-- **Heuristic terminology:** candidate terms are n-gram counts weighted by rarity across the corpus. They can include
-  general words (e.g. "participants", "ordered") and miss the actual name of a field. Words from the query are removed
-  using crude plural-stripping, and there is no other stemming.
-- **The potential connection is only a different arXiv category** among good matches. It is not evidence that a
-  mechanism transfers between fields.
-- **The next-step hypothesis is a fixed template** (no LLM) and needs to be edited by the user.
-- **User notes** can't be deleted from the CLI, and notes are stored with whitespace normalized (line breaks are lost).
-- **Single user:** local files only, no concurrency handling.
-- Stored `source_url`s keep the arXiv version suffix (`v1`) even though record IDs do not.
+## 7. Limitations and Future Work
+
+This is an early prototype with a relatively small research dataset.
+
+Some abstracts exceed the embedding model's input limit, and terminology extraction still relies on heuristics. Cross-disciplinary connections are exploratory rather than verified solutions.
+
+I'd like to improve this by adding better document chunking, expanding the research database, and eventually exploring AI and RAG to provide more useful explanations and connections.
+
+## 8. AI Usage
+
+I used ChatGPT for brainstorming and refining the project idea, Claude.ai for additional planning and prompt drafting, and Claude Code for implementation, debugging, and testing.
+
+After completing the CLI, I also used Claude Code to develop a simple Streamlit interface.
+
+The main development prompts are documented separately in `prompt_log.md`.

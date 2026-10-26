@@ -36,3 +36,6 @@ secrets/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Streamlit secrets (config.toml in .streamlit/ is committed)
+.streamlit/secrets.toml

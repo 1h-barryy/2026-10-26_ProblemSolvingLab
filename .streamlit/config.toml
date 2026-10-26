@@ -1,0 +1,17 @@
+[theme]
+base = "dark"
+primaryColor = "#E3A44B"            # warm amber
+backgroundColor = "#1B1C1E"         # graphite
+secondaryBackgroundColor = "#25272B"
+textColor = "#EDE7DA"               # soft ivory
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"             # hide the Deploy button; this app is local-only
+
+[server]
+address = "localhost"               # local only; not reachable from other machines on the network
+showEmailPrompt = false
+
+[browser]
+gatherUsageStats = false
